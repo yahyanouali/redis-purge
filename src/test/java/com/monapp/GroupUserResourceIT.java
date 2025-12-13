@@ -3,6 +3,6 @@ package com.monapp;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 
 @QuarkusIntegrationTest
-class GreetingResourceIT extends GreetingResourceTest {
+class GroupUserResourceIT extends GroupUserResourceTest {
     // Execute the same tests but in packaged mode.
 }
