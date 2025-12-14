@@ -10,14 +10,14 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Map;
 
 @ApplicationScoped
-public class GroupUserManagerReactive {
+public class GroupUserManagerDataSourceReactive {
 
     public static final String GROUP_USERS_KEY = "groups:%s";
 
     private final ReactiveHashCommands<String, String, User> hashCommands;
     private final ReactiveKeyCommands<String> keyCommands;
 
-    public GroupUserManagerReactive(ReactiveRedisDataSource ds) {
+    public GroupUserManagerDataSourceReactive(ReactiveRedisDataSource ds) {
         this.hashCommands = ds.hash(String.class, String.class, User.class);
         this.keyCommands = ds.key();
     }

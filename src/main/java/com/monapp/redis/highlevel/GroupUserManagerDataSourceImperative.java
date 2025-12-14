@@ -9,14 +9,14 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Map;
 
 @ApplicationScoped
-public class GroupUserManagerImperative  {
+public class GroupUserManagerDataSourceImperative {
 
     public static final String GROUP_USERS_KEY = "groups:%s";
 
     private final HashCommands<String, String, User> hashCommands;
     private final KeyCommands<String> keyCommands;
 
-    public GroupUserManagerImperative(RedisDataSource ds) {
+    public GroupUserManagerDataSourceImperative(RedisDataSource ds) {
         this.hashCommands = ds.hash(String.class, String.class, User.class);
         this.keyCommands = ds.key();
     }

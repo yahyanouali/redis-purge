@@ -1,17 +1,17 @@
 package com.monapp.resource.highlevel;
 
 import com.monapp.model.User;
-import com.monapp.redis.highlevel.GroupUserManagerImperative;
+import com.monapp.redis.highlevel.GroupUserManagerDataSourceImperative;
 import jakarta.ws.rs.*;
 
 import java.util.Map;
 
 @Path("/imperative")
-public class GroupUserResourceImperative {
+public class GroupUserResourceDataSourceImperative {
 
-    private final GroupUserManagerImperative redisDataSourceImperative;
+    private final GroupUserManagerDataSourceImperative redisDataSourceImperative;
 
-    public GroupUserResourceImperative(GroupUserManagerImperative redisDataSourceImperative) {
+    public GroupUserResourceDataSourceImperative(GroupUserManagerDataSourceImperative redisDataSourceImperative) {
         this.redisDataSourceImperative = redisDataSourceImperative;
     }
 
