@@ -3,10 +3,12 @@ package com.monapp.resource.highlevel;
 import com.monapp.model.User;
 import com.monapp.redis.highlevel.GroupUserManagerDataSourceImperative;
 import jakarta.ws.rs.*;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.Map;
 
-@Path("/imperative")
+@Path("/datasource/imperative")
+@Tag(name = "3.1- DataSource Imperative and RedisCommands (Quarkus)")
 public class GroupUserResourceDataSourceImperative {
 
     private final GroupUserManagerDataSourceImperative redisDataSourceImperative;

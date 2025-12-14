@@ -6,11 +6,13 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 @Path("/redis/vertx")
+@Tag(name = "1.1- Redis VertX")
 public class GroupUserResourceRedisVertx {
 
     private final GroupUserManagerRedisVertx redisVertx;

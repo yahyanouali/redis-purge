@@ -7,10 +7,12 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.Map;
 
 @Path("/redisapi/mutiny")
+@Tag(name = "2.2- RedisAPI Mutiny (Quarkus)")
 public class GroupUserResourceRedisAPIMutiny {
 
     private final GroupUserManagerRedisAPIMutiny redisAPIMutiny;

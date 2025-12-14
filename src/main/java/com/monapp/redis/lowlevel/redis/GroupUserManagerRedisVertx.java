@@ -9,11 +9,13 @@ import io.vertx.redis.client.Redis;
 import io.vertx.redis.client.Request;
 import io.vertx.redis.client.Response;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @ApplicationScoped
+@Tag(name = "1- Redis VertX")
 public class GroupUserManagerRedisVertx {
 
     public static final String GROUP_USERS_KEY = "groups:%s";

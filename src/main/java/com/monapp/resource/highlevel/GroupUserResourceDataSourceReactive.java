@@ -7,10 +7,12 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.Map;
 
-@Path("/reactive")
+@Path("/datasource/reactive")
+@Tag(name = "3.2- DataSource Reactive and ReactiveRedisCommands (Quarkus)")
 public class GroupUserResourceDataSourceReactive {
 
     private final GroupUserManagerDataSourceReactive redisDataSourceReactive;
