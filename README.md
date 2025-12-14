@@ -1,70 +1,270 @@
 # redis-purge
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Sample Quarkus 3 application demonstrating several ways to work with Redis for a simple "Group → Users" use case. It exposes REST endpoints that create, read, and delete `User` entries stored in a Redis Hash per group key. The same features are implemented with different Redis client styles:
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+- Low-level Redis (Vert.x)
+- Low-level Redis (Mutiny for Quarkus)
+- Low-level RedisAPI (Vert.x)
+- Low-level RedisAPI (Mutiny)
+- High-level Quarkus Redis DataSource (Imperative)
+- High-level Quarkus Reactive Redis DataSource (Reactive)
 
-## Running the application in dev mode
+The goal is to compare approaches and provide ready-to-run examples and cURL commands.
 
-You can run your application in dev mode that enables live coding using:
 
-```shell script
+## Prerequisites
+
+- Java 21+
+- Maven 3.9+ (or use the included Maven Wrapper `mvnw`/`mvnw.cmd`)
+- Docker (for running Redis via Docker Compose)
+
+
+## Quick start
+
+1) Start Redis locally using the provided Compose file:
+
+```bash
+docker compose -f compose.yml up -d
+```
+
+This launches a Redis 7.4 container exposing `localhost:6379` and persists data in a local Docker volume.
+
+2) Run the app in dev mode:
+
+```bash
 ./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+Quarkus dev console: http://localhost:8080/q/dev
 
-## Packaging and running the application
+OpenAPI: http://localhost:8080/q/openapi
 
-The application can be packaged using:
+Swagger UI: http://localhost:8080/q/swagger-ui
 
-```shell script
-./mvnw package
+
+## Redis configuration
+
+Configured in `src/main/resources/application.properties`:
+
+```
+quarkus.redis.hosts=redis://localhost:6379
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+You can override at runtime with environment variables, e.g.:
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+```bash
+QUARKUS_REDIS_HOSTS=redis://my-redis:6379 ./mvnw quarkus:dev
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
 
-## Creating a native executable
+## Data model
 
-You can create a native executable using:
+`User` is a simple record:
 
-```shell script
-./mvnw package -Dnative
+```java
+public record User(String id, String name, String email) {}
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+Users are stored in a Redis Hash under the group key `groups:{groupId}`. A TTL of 36,000 seconds (10 hours) is set on the group key when the first user is created via the provided APIs.
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+Example JSON payload:
+
+```json
+{
+  "id": "u1",
+  "name": "Jane Doe",
+  "email": "jane@example.com"
+}
 ```
 
-You can then execute your native executable with: `./target/redis-purge-1.0.0-SNAPSHOT-runner`
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+## REST endpoints
 
-## Related Guides
+All endpoints are unauthenticated and accept/return JSON. They are grouped by implementation style.
 
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes with Swagger UI
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Scheduler ([guide](https://quarkus.io/guides/scheduler)): Schedule jobs and tasks
-- Redis Client ([guide](https://quarkus.io/guides/redis)): Connect to Redis in either imperative or reactive style
+Common semantics per group `groups:{groupId}`:
+- Create user: `HSET groups:{groupId} {user.id} {User JSON}` and set TTL to 36,000s
+- Get user: `HGET`
+- Get all users: `HGETALL`
+- Delete user: `HDEL`
+- Delete all users of a group (delete key): `DEL`
+- Get group TTL: `TTL`
 
-## Provided Code
+Note: null/empty results map to HTTP 200 with empty bodies in these samples (no error mapping is implemented).
 
-### REST
+### 1) Low-level Redis (Vert.x)
 
-Easily start your REST Web Services
+Base path: `/redis/vertx`
 
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+- `POST /create/{groupId}` → `CompletionStage<Boolean>`
+- `GET /get/{groupId}/{userId}` → `CompletionStage<User>`
+- `GET /get-all/{groupId}` → `CompletionStage<Map<String, User>>`
+- `DELETE /delete/{groupId}/{userId}` → `CompletionStage<Integer>`
+- `DELETE /delete-all/{groupId}` → `CompletionStage<Integer>`
+- `GET /get-ttl/{groupId}` → `CompletionStage<Long>`
+
+Java: `com.monapp.resource.lowlevel.redis.GroupUserResourceRedisVertx`
+
+### 1.2) Low-level Redis (Mutiny)
+
+Base path: `/redis/mutiny`
+
+- `POST /create/{groupId}` → `Uni<Boolean>`
+- `GET /get/{groupId}/{userId}` → `Uni<User>`
+- `GET /get-all/{groupId}` → `Uni<Map<String, User>>`
+- `DELETE /delete/{groupId}/{userId}` → `Uni<Integer>`
+- `DELETE /delete-all/{groupId}` → `Uni<Integer>`
+- `GET /get-ttl/{groupId}` → `Uni<Long>`
+
+Java: `com.monapp.resource.lowlevel.redis.GroupUserResourceRedisMutiny`
+
+### 2) Low-level RedisAPI (Vert.x)
+
+Base path: `/redisapi/vertx`
+
+- `POST /create/{groupId}` → `CompletionStage<Boolean>`
+- `GET /get/{groupId}/{userId}` → `CompletionStage<User>`
+- `GET /get-all/{groupId}` → `CompletionStage<Map<String, User>>`
+- `DELETE /delete/{groupId}/{userId}` → `CompletionStage<Integer>`
+- `DELETE /delete-all/{groupId}` → `CompletionStage<Integer>`
+- `GET /get-ttl/{groupId}` → `CompletionStage<Long>`
+
+Java: `com.monapp.resource.lowlevel.redisapi.GroupUserResourceRedisAPIVertx`
+
+### 2.2) Low-level RedisAPI (Mutiny)
+
+Base path: `/redisapi/mutiny`
+
+- `POST /create/{groupId}` → `Uni<Boolean>`
+- `GET /get/{groupId}/{userId}` → `Uni<User>`
+- `GET /get-all/{groupId}` → `Uni<Map<String, User>>`
+- `DELETE /delete/{groupId}/{userId}` → `Uni<Integer>`
+- `DELETE /delete-all/{groupId}` → `Uni<Integer>`
+- `GET /get-ttl/{groupId}` → `Uni<Long>`
+
+Java: `com.monapp.resource.lowlevel.redisapi.GroupUserResourceRedisAPIMutiny`
+
+### 3) High-level Quarkus Redis DataSource (Imperative)
+
+Base path: `/datasource/imperative`
+
+- `POST /create/{groupId}` → `boolean`
+- `GET /get/{groupId}/{userId}` → `User`
+- `GET /get-all/{groupId}` → `Map<String, User>`
+- `DELETE /delete/{groupId}/{userId}` → `int`
+- `DELETE /delete-all/{groupId}` → `int`
+- `GET /get-ttl/{groupId}` → `Long`
+
+Java: `com.monapp.resource.highlevel.GroupUserResourceDataSourceImperative`
+
+### 3.2) High-level Quarkus Reactive Redis DataSource
+
+Base path: `/datasource/reactive`
+
+- `POST /create/{groupId}` → `Uni<Boolean>`
+- `GET /get/{groupId}/{userId}` → `Uni<User>`
+- `GET /get-all/{groupId}` → `Uni<Map<String, User>>`
+- `DELETE /delete/{groupId}/{userId}` → `Uni<Integer>`
+- `DELETE /delete-all/{groupId}` → `Uni<Integer>`
+- `GET /get-ttl/{groupId}` → `Uni<Long>`
+
+Java: `com.monapp.resource.highlevel.GroupUserResourceDataSourceReactive`
+
+
+## cURL examples
+
+Assuming the app runs on `http://localhost:8080`.
+
+Create user (imperative datasource example):
+
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"id":"u1","name":"Jane Doe","email":"jane@example.com"}' \
+  http://localhost:8080/datasource/imperative/create/my-group
+```
+
+Get one user:
+
+```bash
+curl http://localhost:8080/datasource/imperative/get/my-group/u1
+```
+
+Get all users:
+
+```bash
+curl http://localhost:8080/datasource/imperative/get-all/my-group
+```
+
+Delete one user:
+
+```bash
+curl -X DELETE http://localhost:8080/datasource/imperative/delete/my-group/u1
+```
+
+Delete all users of a group:
+
+```bash
+curl -X DELETE http://localhost:8080/datasource/imperative/delete-all/my-group
+```
+
+Get TTL of group key:
+
+```bash
+curl http://localhost:8080/datasource/imperative/get-ttl/my-group
+```
+
+The same routes exist under the other base paths listed above.
+
+
+## Build and run
+
+Package the application (JVM mode):
+
+```bash
+./mvnw clean package
+```
+
+Run the JAR:
+
+```bash
+java -jar target/redis-purge-dev.jar
+```
+
+Containerize with the provided Dockerfiles (optional):
+
+```bash
+# Build JVM image (example)
+docker build -f src/main/docker/Dockerfile.jvm -t redis-purge:jvm .
+```
+
+Build a native executable (GraalVM, optional):
+
+```bash
+./mvnw clean package -Dnative
+```
+
+Resulting binaries and images depend on your platform and GraalVM setup.
+
+
+## Project layout
+
+- `src/main/java/com/monapp/model/User.java` — data model
+- `src/main/java/com/monapp/redis/lowlevel/*` — low-level Redis and RedisAPI managers (Vert.x / Mutiny)
+- `src/main/java/com/monapp/resource/lowlevel/*` — REST resources for low-level APIs
+- `src/main/java/com/monapp/redis/highlevel/*` — Quarkus Redis DataSource managers (imperative/reactive)
+- `src/main/java/com/monapp/resource/highlevel/*` — REST resources for high-level DataSource
+- `compose.yml` — Redis service for local development
+- `src/main/resources/application.properties` — configuration
+
+
+## Troubleshooting
+
+- Connection refused: ensure `docker compose up -d` has started Redis on port 6379, or update `quarkus.redis.hosts` accordingly.
+- Empty responses: when a key or user does not exist, endpoints may return `null` or empty maps without an error status.
+- TTL is negative: Redis returns `-2` if key does not exist and `-1` if the key exists but has no associated expire.
+
+
+## License
+
+This project is provided as-is for demonstration purposes.

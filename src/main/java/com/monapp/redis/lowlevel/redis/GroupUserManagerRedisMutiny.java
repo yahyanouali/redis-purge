@@ -97,13 +97,8 @@ public class GroupUserManagerRedisMutiny {
                         return users;
                     }
 
-                    // La réponse Vert.x pour HGETALL est un tableau [K, V, K, V]
-                    // On itère par pas de 2
-                    for (int i = 0; i < response.size(); i += 2) {
-                        // response.get(i) est la clé (userId)
-                        // response.get(i+1) est la valeur (JSON)
-                        String json = response.get(i + 1).toString();
-                        User user = jsonCodec.decode(json, User.class);
+                    for (String responseKey : response.getKeys()) {
+                        User user = jsonCodec.decode(response.get(responseKey).toString(), User.class);;
                         users.put(user.id(), user);
                     }
 
