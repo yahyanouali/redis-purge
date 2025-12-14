@@ -32,6 +32,11 @@ public class GroupUserManagerRedisAPIMutiny {
         String key = GROUP_USERS_KEY.formatted(groupId);
         String userJson = jsonCodec.encode(user);
 
+        /*
+          for the imperative way you can use:
+           - redisAPI.hsetAndAwait(key, user.id(), userJson);
+           - redisAPI.expireAndAwait(key, DEFAULT_TTL);
+         */
         return redisAPI.hset(List.of(key, user.id(), userJson))
                 .chain(newUser -> redisAPI.expire(java.util.List.of(key, String.valueOf(DEFAULT_TTL))))
                 .map(Response::toBoolean);
@@ -43,6 +48,11 @@ public class GroupUserManagerRedisAPIMutiny {
     public Uni<Integer> deleteUser(String groupId, String userId) {
         String key = GROUP_USERS_KEY.formatted(groupId);
 
+        /*
+          for the imperative way you can use:
+           - redisAPI.hdelAndAwait(key, userId);
+         */
+
         return redisAPI.hdel(List.of(key, userId))
                 .map(Response::toInteger);
     }
@@ -52,6 +62,11 @@ public class GroupUserManagerRedisAPIMutiny {
      */
     public Uni<User> getUser(String groupId, String userId) {
         String key = GROUP_USERS_KEY.formatted(groupId);
+
+        /*
+         for the imperative way you can use:
+          - redisAPI.hgetAndAwait(key, userId);
+         */
 
         return redisAPI.hget(key, userId)
                 .map(response -> {
@@ -67,6 +82,10 @@ public class GroupUserManagerRedisAPIMutiny {
      */
     public Uni<Map<String, User>> getAllUsers(String groupId) {
         String key = GROUP_USERS_KEY.formatted(groupId);
+
+        /* For the imperative way you can use:
+         - redisAPI.hgetallAndAwait(key);
+         */
 
         return redisAPI.hgetall(key)
                 .map(response -> {
@@ -91,6 +110,10 @@ public class GroupUserManagerRedisAPIMutiny {
     public Uni<Long> getUserTTL(String groupId) {
         String key = GROUP_USERS_KEY.formatted(groupId);
 
+        /* For the imperative way you can use:
+            - redisAPI.ttlAndAwait(key);
+         */
+
         return redisAPI.ttl(key)
                 .map(Response::toLong);
     }
@@ -100,6 +123,11 @@ public class GroupUserManagerRedisAPIMutiny {
      */
     public Uni<Integer> deleteAllUsers(String groupId) {
         String key = GROUP_USERS_KEY.formatted(groupId);
+
+        /*
+         for the imperative way you can use:
+          - redisAPI.delAndAwait(key);
+         */
 
         return redisAPI.del(List.of(key))
                 .map(Response::toInteger);
