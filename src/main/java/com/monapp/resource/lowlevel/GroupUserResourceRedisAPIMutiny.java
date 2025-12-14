@@ -1,7 +1,7 @@
 package com.monapp.resource.lowlevel;
 
 import com.monapp.model.User;
-import com.monapp.redis.lowlevel.GroupUserManagerRedisAPIMutiny;
+import com.monapp.redis.lowlevel.redisapi.GroupUserManagerRedisAPIMutiny;
 import io.smallrye.mutiny.Uni;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;

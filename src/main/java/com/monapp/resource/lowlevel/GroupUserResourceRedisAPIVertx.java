@@ -1,7 +1,7 @@
 package com.monapp.resource.lowlevel;
 
 import com.monapp.model.User;
-import com.monapp.redis.lowlevel.GroupUserManagerRedisAPIVertx;
+import com.monapp.redis.lowlevel.redisapi.GroupUserManagerRedisAPIVertx;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;

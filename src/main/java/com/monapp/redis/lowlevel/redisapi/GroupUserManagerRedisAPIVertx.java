@@ -1,4 +1,4 @@
-package com.monapp.redis.lowlevel;
+package com.monapp.redis.lowlevel.redisapi;
 
 import com.monapp.model.User;
 import com.monapp.redis.lowlevel.codec.JsonCodec;
