@@ -1,4 +1,4 @@
-package com.monapp.redis;
+package com.monapp.redis.highlevel;
 
 import com.monapp.model.User;
 import io.quarkus.redis.datasource.RedisDataSource;
@@ -9,25 +9,27 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Map;
 
 @ApplicationScoped
-public class GroupUserManager {
+public class GroupUserManagerImperative  {
 
     public static final String GROUP_USERS_KEY = "groups:%s";
 
     private final HashCommands<String, String, User> hashCommands;
     private final KeyCommands<String> keyCommands;
 
-    public GroupUserManager(RedisDataSource ds) {
+    public GroupUserManagerImperative(RedisDataSource ds) {
         this.hashCommands = ds.hash(String.class, String.class, User.class);
         this.keyCommands = ds.key();
     }
 
-    public void createUser(String groupId, User user) {
-        hashCommands.hset(GROUP_USERS_KEY.formatted(groupId), user.id(), user);
-        keyCommands.expire(GROUP_USERS_KEY.formatted(groupId), 36000);
+    public boolean createUser(String groupId, User user) {
+        boolean isSuccess = hashCommands.hset(GROUP_USERS_KEY.formatted(groupId), user.id(), user);
+        boolean expirationSuccess = keyCommands.expire(GROUP_USERS_KEY.formatted(groupId), 36000);
+
+        return isSuccess && expirationSuccess;
     }
 
-    public void deleteUser(String groupId, String userId) {
-        hashCommands.hdel(GROUP_USERS_KEY.formatted(groupId), userId);
+    public int deleteUser(String groupId, String userId) {
+        return hashCommands.hdel(GROUP_USERS_KEY.formatted(groupId), userId);
     }
 
     public User getUser(String groupId, String userId) {
@@ -38,11 +40,11 @@ public class GroupUserManager {
         return hashCommands.hgetall(GROUP_USERS_KEY.formatted(groupId));
     }
 
-    public Long getUserTTL(String groupId, String userId) {
+    public Long getUserTTL(String groupId) {
         return keyCommands.ttl(GROUP_USERS_KEY.formatted(groupId));
     }
-
-    public void deleteAllUsers(String groupId) {
-        keyCommands.del(GROUP_USERS_KEY.formatted(groupId));
+   
+    public int deleteAllUsers(String groupId) {
+        return keyCommands.del(GROUP_USERS_KEY.formatted(groupId));
     }
 }
