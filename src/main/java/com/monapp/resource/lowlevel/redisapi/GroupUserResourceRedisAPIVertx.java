@@ -1,4 +1,4 @@
-package com.monapp.resource.lowlevel;
+package com.monapp.resource.lowlevel.redisapi;
 
 import com.monapp.model.User;
 import com.monapp.redis.lowlevel.redisapi.GroupUserManagerRedisAPIVertx;
@@ -13,46 +13,46 @@ import java.util.concurrent.CompletionStage;
 @Path("/redisapi/vertx")
 public class GroupUserResourceRedisAPIVertx {
 
-    private final GroupUserManagerRedisAPIVertx groupUserManagerRedisAPIVertx;
+    private final GroupUserManagerRedisAPIVertx redisAPIVertx;
 
-    public GroupUserResourceRedisAPIVertx(GroupUserManagerRedisAPIVertx groupUserManagerRedisAPIVertx) {
-        this.groupUserManagerRedisAPIVertx = groupUserManagerRedisAPIVertx;
+    public GroupUserResourceRedisAPIVertx(GroupUserManagerRedisAPIVertx redisAPIVertx) {
+        this.redisAPIVertx = redisAPIVertx;
     }
 
     @POST
     @Path("/create/{groupId}")
     public CompletionStage<Boolean> createUser(String groupId, User user) {
-        return groupUserManagerRedisAPIVertx.createUser(groupId, user).toCompletionStage();
+        return redisAPIVertx.createUser(groupId, user).toCompletionStage();
     }
 
     @GET
     @Path("/get/{groupId}/{userId}")
     public CompletionStage<User> getUser(String groupId, String userId) {
-        return groupUserManagerRedisAPIVertx.getUser(groupId, userId).toCompletionStage();
+        return redisAPIVertx.getUser(groupId, userId).toCompletionStage();
     }
 
     @GET
     @Path("/get-all/{groupId}")
     public CompletionStage<Map<String, User>> getAllUsers(String groupId) {
-        return groupUserManagerRedisAPIVertx.getAllUsers(groupId).toCompletionStage();
+        return redisAPIVertx.getAllUsers(groupId).toCompletionStage();
     }
 
     @DELETE
     @Path("/delete/{groupId}/{userId}")
     public CompletionStage<Integer> deleteUser(String groupId, String userId) {
-        return groupUserManagerRedisAPIVertx.deleteUser(groupId, userId).toCompletionStage();
+        return redisAPIVertx.deleteUser(groupId, userId).toCompletionStage();
     }
 
     @DELETE
     @Path("/delete-all/{groupId}")
     public CompletionStage<Integer> deleteAllUsers(String groupId) {
-        return groupUserManagerRedisAPIVertx.deleteAllUsers(groupId).toCompletionStage();
+        return redisAPIVertx.deleteAllUsers(groupId).toCompletionStage();
     }
 
     @GET
     @Path("/get-ttl/{groupId}")
     public CompletionStage<Long> getGroupTTL(String groupId) {
-        return groupUserManagerRedisAPIVertx.getUserTTL(groupId).toCompletionStage();
+        return redisAPIVertx.getUserTTL(groupId).toCompletionStage();
     }
 
 }

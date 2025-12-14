@@ -1,4 +1,4 @@
-package com.monapp.resource.lowlevel;
+package com.monapp.resource.lowlevel.redisapi;
 
 import com.monapp.model.User;
 import com.monapp.redis.lowlevel.redisapi.GroupUserManagerRedisAPIMutiny;
@@ -13,46 +13,46 @@ import java.util.Map;
 @Path("/redisapi/mutiny")
 public class GroupUserResourceRedisAPIMutiny {
 
-    private final GroupUserManagerRedisAPIMutiny groupUserManagerRedisAPIMutiny;
+    private final GroupUserManagerRedisAPIMutiny redisAPIMutiny;
 
-    public GroupUserResourceRedisAPIMutiny(GroupUserManagerRedisAPIMutiny groupUserManagerRedisAPIMutiny) {
-        this.groupUserManagerRedisAPIMutiny = groupUserManagerRedisAPIMutiny;
+    public GroupUserResourceRedisAPIMutiny(GroupUserManagerRedisAPIMutiny redisAPIMutiny) {
+        this.redisAPIMutiny = redisAPIMutiny;
     }
 
     @POST
     @Path("/create/{groupId}")
     public Uni<Boolean> createUser(String groupId, User user) {
-        return groupUserManagerRedisAPIMutiny.createUser(groupId, user);
+        return redisAPIMutiny.createUser(groupId, user);
     }
 
     @GET
     @Path("/get/{groupId}/{userId}")
     public Uni<User> getUser(String groupId, String userId) {
-        return groupUserManagerRedisAPIMutiny.getUser(groupId, userId);
+        return redisAPIMutiny.getUser(groupId, userId);
     }
 
     @GET
     @Path("/get-all/{groupId}")
     public Uni<Map<String, User>> getAllUsers(String groupId) {
-        return groupUserManagerRedisAPIMutiny.getAllUsers(groupId);
+        return redisAPIMutiny.getAllUsers(groupId);
     }
 
     @DELETE
     @Path("/delete/{groupId}/{userId}")
     public Uni<Integer> deleteUser(String groupId, String userId) {
-        return groupUserManagerRedisAPIMutiny.deleteUser(groupId, userId);
+        return redisAPIMutiny.deleteUser(groupId, userId);
     }
 
     @DELETE
     @Path("/delete-all/{groupId}")
     public Uni<Integer> deleteAllUsers(String groupId) {
-        return groupUserManagerRedisAPIMutiny.deleteAllUsers(groupId);
+        return redisAPIMutiny.deleteAllUsers(groupId);
     }
 
     @GET
     @Path("/get-ttl/{groupId}")
     public Uni<Long> getGroupTTL(String groupId) {
-        return groupUserManagerRedisAPIMutiny.getUserTTL(groupId);
+        return redisAPIMutiny.getUserTTL(groupId);
     }
 
 }
